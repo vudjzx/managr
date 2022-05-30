@@ -3,8 +3,8 @@ import {Link} from 'react-router-dom';
 const Header = () => {
   return (
     <header className="px-4 py-5 bg-white border-b">
-      <div className="md:flex md:justify-between">
-        <h2 className="text-4xl text-sky-600 font-black text-center">Managr</h2>
+      <div className="md:flex md:flex-row md:justify-between flex flex-col items-center">
+        <h2 className="text-4xl text-sky-600 font-black text-center py-2">Managr</h2>
 
         <input
           type="search"
@@ -12,7 +12,7 @@ const Header = () => {
           className="rounded-lg lg:w-96 block p-2 border"
         />
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 py-2">
           <Link to="/projects" className="font-bold uppercase">
             Projects
           </Link>

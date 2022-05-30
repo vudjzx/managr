@@ -1,5 +1,4 @@
 import {IUser} from '../users/IUser';
-import {Schema} from 'mongoose';
 import {Document} from 'mongoose';
 
 export interface IProject extends Document {

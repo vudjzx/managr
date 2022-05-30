@@ -42,13 +42,15 @@ const getProject = async (req: Request, res: Response) => {
       if (project && project.owner.toString() === req.user.id) {
         const tasks = await Task.find().where('project').equals(req.params.id);
         res.status(200).json({msg: 'Project retrieved', project, tasks});
+      } else {
+        res.status(404).json({msg: 'Cant see that project'});
       }
-      res.status(404).json({msg: 'Cant see that project'});
     } catch (error) {
       res.status(400).json({msg: 'Project not found'});
     }
+  } else {
+    res.status(401).json({msg: 'Unauthorized'});
   }
-  res.status(401).json({msg: 'Unauthorized'});
 };
 
 const editProject = async (req: Request, res: Response) => {
