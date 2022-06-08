@@ -4,13 +4,14 @@ import useProjects from '../hooks/useProjects';
 import {IProject} from '../interfaces/Responses';
 import CustomAlert from './CustomAlert';
 
-const ProjectForm = () => {
-  const {showAlert, alert, createProject, project} = useProjects();
+const ProjectForm = (props: {editing?: boolean}) => {
+  const {showAlert, alert, createProject, project, updateProject} = useProjects();
   const [formData, setFormData] = useState<IProject>({
     name: '',
     description: '',
     deadline: '',
     client: '',
+    tasks: [],
   });
   const params = useParams();
   useEffect(() => {
@@ -28,18 +29,23 @@ const ProjectForm = () => {
       });
       return;
     }
-    await createProject(formData);
+    if (props.editing) {
+      await updateProject(formData);
+    } else {
+      await createProject(formData);
+    }
     setFormData({
       name: '',
       description: '',
       deadline: '',
       client: '',
+      tasks: [],
     });
   };
 
   return (
     <div className="w-full flex justify-center">
-      <form className="bg-white py-10 px-5 md:w-1/2 rounded-lg" onSubmit={handleSubmit}>
+      <form className="bg-white py-10 px-5 xl:w-1/2 rounded-lg" onSubmit={handleSubmit}>
         {alert.message && <CustomAlert {...alert} />}
 
         <div>
@@ -96,7 +102,7 @@ const ProjectForm = () => {
   );
 };
 
-const InputField = (props: React.HTMLProps<HTMLInputElement>) => {
+export const InputField = (props: React.HTMLProps<HTMLInputElement>) => {
   return (
     <div className="mb-5">
       <label className="text-gray-700 uppercase font-bold text-sm" htmlFor={props.htmlFor}>

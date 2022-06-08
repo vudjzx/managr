@@ -3,6 +3,7 @@ import AuthProvider from './context/AuthProvider';
 import {ProjectsProvider} from './context/ProjectsProvider';
 import AuthLayout from './layouts/AuthLayout';
 import PrivateLayout from './layouts/PrivateLayout';
+import AddCollaborator from './pages/AddCollaborator';
 import ConfirmAccount from './pages/ConfirmAccount';
 import {EditProject} from './pages/EditProject';
 import ForgotPassword from './pages/ForgotPassword';
@@ -31,6 +32,7 @@ function App() {
               <Route index element={<Projects />} />
               <Route path="create-project" element={<NewProject />} />
               <Route path=":id" element={<ProjectDetail />} />
+              <Route path="add-collaborator/:id" element={<AddCollaborator />} />
               <Route path="edit/:id" element={<EditProject />} />
             </Route>
           </Routes>

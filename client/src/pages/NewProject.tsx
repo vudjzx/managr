@@ -1,8 +1,15 @@
+import {useEffect} from 'react';
 import ProjectForm from '../components/ProjectForm';
 import useProjects from '../hooks/useProjects';
 
 const NewProject = () => {
-  const {projects} = useProjects();
+  const {showAlert} = useProjects();
+  useEffect(() => {
+    showAlert({
+      message: '',
+      error: false,
+    });
+  }, []);
   return (
     <>
       <h1 className="text-4xl font-black">Create project</h1>

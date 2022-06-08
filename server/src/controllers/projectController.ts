@@ -1,13 +1,13 @@
 import Project from '../models/Project';
 import {Request, Response} from 'express';
-import Task from '../models/Task';
 import mongoose from 'mongoose';
+import User from '../models/User';
 
 const getProjects = async (req: Request, res: Response) => {
   if (req.user) {
     try {
       const projects = await Project.find({
-        owner: req.user,
+        $or: [{owner: req.user.id}, {collaborators: req.user.id}],
       });
       res.status(200).json({msg: 'Projects retrieved', projects});
     } catch (error) {
@@ -38,10 +38,15 @@ const getProject = async (req: Request, res: Response) => {
     try {
       if (!mongoose.Types.ObjectId.isValid(req.params.id))
         return res.status(400).json({msg: 'Project not found'});
-      const project = await Project.findById(req.params.id);
-      if (project && project.owner.toString() === req.user.id) {
-        const tasks = await Task.find().where('project').equals(req.params.id);
-        res.status(200).json({msg: 'Project retrieved', project, tasks});
+      const project = await Project.findById(req.params.id)
+        .populate({path: 'tasks', populate: {path: 'completedBy', select: 'name'}})
+        .populate('collaborators', 'name email');
+      if (!project) return res.status(404).json({msg: 'Project not found'});
+      if (
+        project.owner.toString() === req.user.id ||
+        project.collaborators.some(e => e._id.toString() === req.user.id.toString())
+      ) {
+        res.status(200).json({msg: 'Project retrieved', project});
       } else {
         res.status(404).json({msg: 'Cant see that project'});
       }
@@ -64,13 +69,15 @@ const editProject = async (req: Request, res: Response) => {
           new: true,
         });
         res.status(200).json({msg: 'Project updated', updatedProject});
+      } else {
+        res.status(404).json({msg: 'Cant see that project'});
       }
-      res.status(404).json({msg: 'Cant see that project'});
     } catch (error) {
       res.status(400).json({msg: 'Project not found'});
     }
+  } else {
+    res.status(401).json({msg: 'Unauthorized'});
   }
-  res.status(401).json({msg: 'Unauthorized'});
 };
 
 const deleteProject = async (req: Request, res: Response) => {
@@ -82,18 +89,88 @@ const deleteProject = async (req: Request, res: Response) => {
       if (project && project.owner.toString() === req.user.id) {
         await Project.findByIdAndDelete(req.params.id);
         res.status(200).json({msg: 'Project deleted'});
+      } else {
+        res.status(404).json({msg: 'Project not found'});
       }
-      res.status(404).json({msg: 'Project not found'});
     } catch (error) {
       res.status(400).json({msg: 'Project not found'});
     }
+  } else {
+    res.status(401).json({msg: 'Unauthorized'});
   }
-  res.status(401).json({msg: 'Unauthorized'});
 };
 
-const addCollaborator = async (req: Request, res: Response) => {};
+const searchCollaborator = async (req: Request, res: Response) => {
+  if (req.user) {
+    try {
+      const {email} = req.body;
+      const user = await User.findOne({email}).select(
+        '-password -tasks -token -createdAt -updatedAt -__v -confirmed',
+      );
+      if (user) {
+        res.status(200).json({msg: 'User found', user});
+      } else {
+        res.status(404).json({msg: 'User not found'});
+      }
+    } catch (error) {
+      res.status(404).json({msg: 'User not found'});
+    }
+  } else {
+    res.status(401).json({msg: 'Unauthorized'});
+  }
+};
 
-const deleteCollaborator = async (req: Request, res: Response) => {};
+const addCollaborator = async (req: Request, res: Response) => {
+  if (req.user) {
+    try {
+      const {id} = req.body;
+      const user = await User.findOne({id});
+      if (!user) return res.status(404).json({msg: 'User not found'});
+
+      const project = await Project.findById(req.params.id);
+      if (!project) return res.status(404).json({msg: 'Project not found'});
+
+      if (project.collaborators.includes(id))
+        return res.status(400).json({msg: 'Collaborator already added'});
+      if (project.owner.toString() === id)
+        return res.status(400).json({msg: 'You can not add yourself as collaborator'});
+      if (project.owner.toString() !== req.user.id)
+        return res.status(401).json({msg: 'Unauthorized'});
+
+      project.collaborators.push(id);
+      await project.save();
+      res.status(200).json({msg: 'Collaborator added', project});
+    } catch (error) {
+      res.status(400).send(error);
+    }
+  } else {
+    res.status(401).json({msg: 'Unauthorized'});
+  }
+};
+const deleteCollaborator = async (req: Request, res: Response) => {
+  if (req.user) {
+    try {
+      const project = await Project.findById(req.params.id);
+      if (!project) return res.status(404).json({msg: 'Project not found'});
+      if (project.owner.toString() !== req.user.id)
+        return res.status(401).json({msg: 'Unauthorized'});
+      const {id} = req.body;
+      const user = await User.findOne({id});
+      if (!user) return res.status(404).json({msg: 'User not found'});
+      if (!project.collaborators.includes(id))
+        return res.status(400).json({msg: 'Collaborator not found'});
+      project.collaborators = project.collaborators.filter(
+        collaborator => collaborator.toString() !== id,
+      );
+      await project.save();
+      res.status(200).json({msg: 'Collaborator deleted', project});
+    } catch (error) {
+      res.status(400).send(error);
+    }
+  } else {
+    res.status(401).json({msg: 'Unauthorized'});
+  }
+};
 
 export {
   getProjects,
@@ -103,4 +180,5 @@ export {
   deleteProject,
   addCollaborator,
   deleteCollaborator,
+  searchCollaborator,
 };

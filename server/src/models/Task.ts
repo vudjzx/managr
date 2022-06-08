@@ -15,7 +15,6 @@ const taskSchema = new Schema<ITask>(
     },
     completed: {
       type: Boolean,
-      required: true,
       default: false,
     },
     deadline: {
@@ -26,12 +25,17 @@ const taskSchema = new Schema<ITask>(
     priority: {
       type: String,
       required: true,
-      enum: ['low', 'medium', 'high'],
+      enum: ['Low', 'Medium', 'High'],
     },
     project: {
       type: Schema.Types.ObjectId,
       ref: 'Project',
       required: true,
+    },
+    completedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
     },
   },
   {timestamps: true},

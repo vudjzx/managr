@@ -35,6 +35,12 @@ const projectSchema = new Schema<IProject>(
         required: true,
       },
     ],
+    tasks: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Task',
+      },
+    ],
   },
   {timestamps: true},
 );

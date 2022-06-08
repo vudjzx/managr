@@ -4,7 +4,9 @@ const Header = () => {
   return (
     <header className="px-4 py-5 bg-white border-b">
       <div className="md:flex md:flex-row md:justify-between flex flex-col items-center">
-        <h2 className="text-4xl text-sky-600 font-black text-center py-2">Managr</h2>
+        <Link className="text-4xl text-sky-600 font-black text-center py-2" to="/projects">
+          Managr
+        </Link>
 
         <input
           type="search"
