@@ -1,5 +1,6 @@
 import {useEffect} from 'react';
 import {Link, useParams} from 'react-router-dom';
+import {io, Socket} from 'socket.io-client';
 import {CollaboratorItem} from '../components/CollaboratorItem';
 import CustomAlert from '../components/CustomAlert';
 import DeleteTaskModal from '../components/DeleteTaskModal';
@@ -10,9 +11,21 @@ import useAdmin from '../hooks/useAdmin';
 import useProjects from '../hooks/useProjects';
 import {createDefaultTask} from '../interfaces/Responses';
 
+let socket: Socket;
 export const ProjectDetail = () => {
   const params = useParams();
-  const {getProjectDetails, loading, project, handleTaskEdit, alert, taskModal} = useProjects();
+  const {
+    getProjectDetails,
+    loading,
+    project,
+    handleTaskEdit,
+    alert,
+    taskModal,
+    submitProjectTask,
+    deleteProjectTask,
+    updateProjectTask,
+    completeProjectTask,
+  } = useProjects();
   const isAdmin = useAdmin();
 
   useEffect(() => {
@@ -20,6 +33,36 @@ export const ProjectDetail = () => {
       void getProjectDetails(params.id);
     }
   }, []);
+
+  useEffect(() => {
+    socket = io(import.meta.env.VITE_BACKEND_URL);
+    if (params.id) {
+      socket.emit('open project', params.id);
+    }
+  }, []);
+
+  useEffect(() => {
+    socket.on('addedTask', task => {
+      if (task.project === project._id) {
+        submitProjectTask(task);
+      }
+    });
+    socket.on('deletedTask', task => {
+      if (task.project === project._id) {
+        deleteProjectTask(task);
+      }
+    });
+    socket.on('updatedTask', task => {
+      if (task.project._id === project._id) {
+        updateProjectTask(task);
+      }
+    });
+    socket.on('completedTask', task => {
+      if (task.project._id === project._id) {
+        completeProjectTask(task);
+      }
+    });
+  }, [socket, project]);
 
   if (loading) return <LoadingComponent />;
 

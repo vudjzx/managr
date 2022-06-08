@@ -1,10 +1,12 @@
 import {ProjectItem} from '../components/ProjectItem';
 import useProjects from '../hooks/useProjects';
+import {LoadingComponent} from '../components/LoadingComponent';
 
 const Projects = () => {
   const {projects, loading} = useProjects();
+
   return loading ? (
-    <h1>Loading...</h1>
+    <LoadingComponent />
   ) : (
     <>
       <h1 className="text-4xl font-black">Projects</h1>

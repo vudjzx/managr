@@ -120,6 +120,13 @@ export interface IProjectContext {
   deleteCollabModal: boolean;
   handleDeleteCollaborator: (collaborator?: ICollaborator) => void;
   changeTaskStatus: (id: string) => Promise<any>;
+  handleSearchModal: () => void;
+  searchModal: boolean;
+  submitProjectTask: (task: ITask) => void;
+  deleteProjectTask: (task: ITask) => void;
+  updateProjectTask: (task: ITask) => void;
+  completeProjectTask: (task: ITask) => void;
+  logoutProjects: () => void;
 }
 
 export function createDefaultContext(): IProjectContext {
@@ -190,6 +197,25 @@ export function createDefaultContext(): IProjectContext {
     deleteCollabModal: false,
     changeTaskStatus: async (id: string) => {
       console.log(id);
+    },
+    handleSearchModal: () => {
+      console.log('handleSearchModal');
+    },
+    searchModal: false,
+    submitProjectTask: (task: ITask) => {
+      console.log(task);
+    },
+    deleteProjectTask: (task: ITask) => {
+      console.log(task._id);
+    },
+    updateProjectTask: (task: ITask) => {
+      console.log(task);
+    },
+    completeProjectTask: (task: ITask) => {
+      console.log(task);
+    },
+    logoutProjects: () => {
+      console.log('logoutProjects');
     },
   };
 }

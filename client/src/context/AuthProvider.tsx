@@ -1,5 +1,4 @@
 import {useState, useEffect, createContext} from 'react';
-import {useNavigate} from 'react-router-dom';
 import axiosClient from '../config/axiosClient';
 import {defaultAuthContext, IAuth, IAuthContext, ILoginRes} from '../interfaces/IAuth';
 
@@ -35,7 +34,14 @@ const AuthProvider: React.FC = ({children}) => {
     void authUser();
   }, []);
 
-  return <AuthContext.Provider value={{auth, setAuth, loading}}>{children}</AuthContext.Provider>;
+  const logout = () => {
+    localStorage.removeItem('token');
+    setAuth(defaultAuthContext.auth);
+  };
+
+  return (
+    <AuthContext.Provider value={{auth, setAuth, loading, logout}}>{children}</AuthContext.Provider>
+  );
 };
 
 export {AuthContext};

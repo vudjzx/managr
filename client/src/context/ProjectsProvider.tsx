@@ -15,6 +15,10 @@ import {
   IProjectsResponse,
   ITask,
 } from '../interfaces/Responses';
+import {io, Socket} from 'socket.io-client';
+import useAuth from '../hooks/useAuth';
+
+let socket: Socket;
 
 export const ProjectsContext = createContext<IProjectContext>(createDefaultContext());
 
@@ -28,7 +32,12 @@ export const ProjectsProvider: React.FC = ({children}) => {
   const [project, setProject] = useState<IDetailedProject>(createDefaultProject());
   const [taskModal, setTaskModal] = useState<boolean>(false);
   const [deleteCollabModal, setDeleteCollabModal] = useState<boolean>(false);
-  const [taskLoading, setTaskLoading] = useState<boolean>(false);
+  const [searchModal, setSearchModal] = useState<boolean>(false);
+  const {auth} = useAuth();
+
+  const handleSearchModal = () => {
+    setSearchModal(!searchModal);
+  };
 
   const handleTaskModal = () => {
     setTaskModal(!taskModal);
@@ -59,6 +68,10 @@ export const ProjectsProvider: React.FC = ({children}) => {
       }
     };
     void getProjects();
+  }, [auth]);
+
+  useEffect(() => {
+    socket = io(import.meta.env.VITE_BACKEND_URL);
   }, []);
 
   useEffect(() => {
@@ -184,10 +197,9 @@ export const ProjectsProvider: React.FC = ({children}) => {
         },
       };
       const {data} = await axiosClient.post('/tasks', task, config);
-      setProject({...project, tasks: [...project.tasks, data.storedTask]});
-      setTaskModal(false);
+      socket.emit('addedTask', data.storedTask);
       showAlert({
-        message: data.msg,
+        message: 'Task added successfully',
         error: false,
       });
     } catch (error) {
@@ -210,15 +222,12 @@ export const ProjectsProvider: React.FC = ({children}) => {
         },
       };
       const {data} = await axiosClient.put(`/tasks/${task._id}`, task, config);
-      setProject({
-        ...project,
-        tasks: project.tasks.map(t => (t._id === task._id ? data : t)),
-      });
       showAlert({
         message: 'Task updated successfully',
         error: false,
       });
       setTaskModal(false);
+      socket.emit('updatedTask', data);
     } catch (error) {
       console.log(error);
     }
@@ -248,10 +257,7 @@ export const ProjectsProvider: React.FC = ({children}) => {
       };
       if (type === 'task') {
         const {data} = await axiosClient.delete(`/tasks/${id}`, config);
-        setProject({
-          ...project,
-          tasks: project.tasks.filter(t => t._id !== task._id),
-        });
+        socket.emit('deletedTask', task);
         showAlert({
           message: data.msg,
           error: true,
@@ -346,16 +352,52 @@ export const ProjectsProvider: React.FC = ({children}) => {
         },
       };
       const {data} = await axiosClient.post(`/tasks/${id}/complete`, {}, config);
-      setProject({
-        ...project,
-        tasks: project.tasks.map(t => (t._id === data._id ? data : t)),
-      });
+      socket.emit('completedTask', data);
     } catch (error: any) {
       showAlert({
         message: error.response.data.msg,
         error: true,
       });
     }
+  };
+
+  const submitProjectTask = (task: ITask) => {
+    setProject({...project, tasks: [...project.tasks, task]});
+    setTaskModal(false);
+  };
+
+  const deleteProjectTask = (task: ITask) => {
+    setProject({
+      ...project,
+      tasks: project.tasks.filter(t => t._id !== task._id),
+    });
+  };
+
+  const updateProjectTask = (task: any) => {
+    setProject({
+      ...project,
+      tasks: project.tasks.map(t =>
+        t._id === task._id ? {...task, project: task.project._id} : t,
+      ),
+    });
+  };
+
+  const completeProjectTask = (task: any) => {
+    setProject({
+      ...project,
+      tasks: project.tasks.map(t =>
+        t._id === task._id ? {...task, project: task.project._id} : t,
+      ),
+    });
+  };
+
+  const logoutProjects = () => {
+    setProjects([]);
+    setProject(createDefaultProject());
+    setAlert({
+      message: '',
+      error: false,
+    });
   };
 
   return (
@@ -386,6 +428,13 @@ export const ProjectsProvider: React.FC = ({children}) => {
         handleDeleteCollaborator,
         deleteCollabModal,
         changeTaskStatus,
+        handleSearchModal,
+        searchModal,
+        submitProjectTask,
+        deleteProjectTask,
+        updateProjectTask,
+        completeProjectTask,
+        logoutProjects,
       }}>
       {children}
     </ProjectsContext.Provider>

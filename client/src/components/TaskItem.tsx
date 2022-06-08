@@ -26,7 +26,7 @@ export const TaskItem = (props: {task: ITask}) => {
         <p className="mb-2 text-lg">{formatDate(props.task.deadline)}</p>
         <p className="mb-2 text-gray-600">{props.task.priority}</p>
         {props.task.completed && (
-          <p className="text-xs font-bold uppercase bg-green-600 uppercase p-1 rounded-lg text-white">{`Completed by: ${props.task.completedBy?.name}`}</p>
+          <p className="text-xs font-bold text-center bg-green-600 uppercase p-1 rounded-lg text-white">{`Completed by: ${props.task.completedBy?.name}`}</p>
         )}
       </div>
       <div className="flex flex-col lg:flex-row gap-2">
@@ -41,7 +41,7 @@ export const TaskItem = (props: {task: ITask}) => {
         <button
           className={`bg-${
             props.task.completed ? 'sky' : 'gray'
-          }-600 px-4 py-3 text-white uppercase font-bold text-sm rounded-lg`}
+          }-500 px-4 py-3 text-white uppercase font-bold text-sm rounded-lg`}
           onClick={updateTask}>
           {taskStatusText()}
         </button>
