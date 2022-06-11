@@ -1,10 +1,8 @@
-import axios from 'axios';
 import {useState} from 'react';
 import {Link} from 'react-router-dom';
 import CustomAlert from '../components/CustomAlert';
 import axiosClient from '../config/axiosClient';
 import {CustomAlertProps} from '../interfaces/CustomAlert';
-import {UserCreatedResponse} from '../interfaces/Responses';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -129,7 +127,7 @@ const Register = () => {
 
           <input
             type="submit"
-            className="bg-sky-500 text-white text-xl  p-3 rounded-md mt-5 cursor-pointer hover:bg-sky-800 transition-colors focus:outline-none focus:shadow"
+            className="bg-sky-600 text-white text-xl  p-3 rounded-md mt-5 cursor-pointer hover:bg-sky-800 transition-colors focus:outline-none focus:shadow"
             value="Sign up"
           />
         </div>

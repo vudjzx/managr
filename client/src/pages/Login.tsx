@@ -5,6 +5,7 @@ import axiosClient from '../config/axiosClient';
 import CustomAlert from '../components/CustomAlert';
 import useAuth from '../hooks/useAuth';
 import {ILoginRes} from '../interfaces/IAuth';
+import {LoadingComponent} from '../components/LoadingComponent';
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -48,7 +49,7 @@ const Login = () => {
   if (loading) {
     return (
       <>
-        <div>loading...</div>
+        <LoadingComponent />
       </>
     );
   }
@@ -96,7 +97,7 @@ const Login = () => {
 
               <input
                 type="submit"
-                className="bg-sky-700 text-white text-xl  p-3 rounded-md mt-5 cursor-pointer hover:bg-sky-800 transition-colors focus:outline-none focus:shadow"
+                className="bg-sky-600 text-white text-xl  p-3 rounded-md mt-5 cursor-pointer hover:bg-sky-800 transition-colors focus:outline-none focus:shadow"
                 value="Login"
               />
             </div>
